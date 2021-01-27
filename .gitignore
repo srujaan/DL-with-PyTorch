@@ -1,0 +1,2 @@
+# Ignore ipynb files without the folders directory
+*.ipynb
