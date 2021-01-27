@@ -1,0 +1,1 @@
+# This repository contains all the exercises from the book "Deeplearning with PyTorch"
