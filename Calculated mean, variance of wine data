@@ -1,0 +1,495 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "wine_tabular_data.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyM9kYxhORXMD+yjRTTX9pJb",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/srujaan/DL-with-PyTorch/blob/master/Calculated%20mean%2C%20variance%20of%20wine%20data\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "wYJEGaPxIl5E"
+      },
+      "source": [
+        "import csv\n",
+        "import torch\n",
+        "import numpy as np"
+      ],
+      "execution_count": 3,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "xuezzKa3SKV6",
+        "outputId": "c5097a13-039b-411b-f7c3-904b6c9cd308"
+      },
+      "source": [
+        "wine_path = '/content/winequality-white.csv'\n",
+        "wineq_numpy = np.loadtxt(wine_path, dtype=np.float32, delimiter=\";\",skiprows=1)\n",
+        "wineq_numpy"
+      ],
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[ 7.  ,  0.27,  0.36, ...,  0.45,  8.8 ,  6.  ],\n",
+              "       [ 6.3 ,  0.3 ,  0.34, ...,  0.49,  9.5 ,  6.  ],\n",
+              "       [ 8.1 ,  0.28,  0.4 , ...,  0.44, 10.1 ,  6.  ],\n",
+              "       ...,\n",
+              "       [ 6.5 ,  0.24,  0.19, ...,  0.46,  9.4 ,  6.  ],\n",
+              "       [ 5.5 ,  0.29,  0.3 , ...,  0.38, 12.8 ,  7.  ],\n",
+              "       [ 6.  ,  0.21,  0.38, ...,  0.32, 11.8 ,  6.  ]], dtype=float32)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "-IWEU58uSetZ",
+        "outputId": "3e71e04b-86e6-4006-f147-9216269e886a"
+      },
+      "source": [
+        "# Let’s check that all the data has been read\n",
+        "col_list = next(csv.reader(open(wine_path), delimiter=\";\"))\n",
+        "\n",
+        "wineq_numpy.shape, col_list"
+      ],
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "((4898, 12),\n",
+              " ['fixed acidity',\n",
+              "  'volatile acidity',\n",
+              "  'citric acid',\n",
+              "  'residual sugar',\n",
+              "  'chlorides',\n",
+              "  'free sulfur dioxide',\n",
+              "  'total sulfur dioxide',\n",
+              "  'density',\n",
+              "  'pH',\n",
+              "  'sulphates',\n",
+              "  'alcohol',\n",
+              "  'quality'])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 5
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "a3ekOfHLU3SQ",
+        "outputId": "daf64424-c28f-43a3-a5fe-d5f679e1b868"
+      },
+      "source": [
+        "# convert the NumPy array to a PyTorch tensor:\n",
+        "wineq = torch.from_numpy(wineq_numpy)\n",
+        "wineq. shape, wineq.dtype"
+      ],
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(torch.Size([4898, 12]), torch.float32)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "PD3De9OyVgOY",
+        "outputId": "39725187-9730-48d9-c80c-429b715e0456"
+      },
+      "source": [
+        "wineq"
+      ],
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "tensor([[ 7.0000,  0.2700,  0.3600,  ...,  0.4500,  8.8000,  6.0000],\n",
+              "        [ 6.3000,  0.3000,  0.3400,  ...,  0.4900,  9.5000,  6.0000],\n",
+              "        [ 8.1000,  0.2800,  0.4000,  ...,  0.4400, 10.1000,  6.0000],\n",
+              "        ...,\n",
+              "        [ 6.5000,  0.2400,  0.1900,  ...,  0.4600,  9.4000,  6.0000],\n",
+              "        [ 5.5000,  0.2900,  0.3000,  ...,  0.3800, 12.8000,  7.0000],\n",
+              "        [ 6.0000,  0.2100,  0.3800,  ...,  0.3200, 11.8000,  6.0000]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "fZRlTbPeWJTy",
+        "outputId": "8f75e2e8-d827-4684-fff7-eb4c43248199"
+      },
+      "source": [
+        "# Select all rows and all columns except last column\n",
+        "data = wineq[:, :-1]\n",
+        "data, data.shape"
+      ],
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(tensor([[ 7.0000,  0.2700,  0.3600,  ...,  3.0000,  0.4500,  8.8000],\n",
+              "         [ 6.3000,  0.3000,  0.3400,  ...,  3.3000,  0.4900,  9.5000],\n",
+              "         [ 8.1000,  0.2800,  0.4000,  ...,  3.2600,  0.4400, 10.1000],\n",
+              "         ...,\n",
+              "         [ 6.5000,  0.2400,  0.1900,  ...,  2.9900,  0.4600,  9.4000],\n",
+              "         [ 5.5000,  0.2900,  0.3000,  ...,  3.3400,  0.3800, 12.8000],\n",
+              "         [ 6.0000,  0.2100,  0.3800,  ...,  3.2600,  0.3200, 11.8000]]),\n",
+              " torch.Size([4898, 11]))"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "s-Cfa5hrdLZI",
+        "outputId": "4e04d12e-339a-4fdf-ef6d-5cae0a814ccf"
+      },
+      "source": [
+        "# select all rows and last column\n",
+        "target = wineq[:, -1]\n",
+        "target, target.shape"
+      ],
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(tensor([6., 6., 6.,  ..., 6., 7., 6.]), torch.Size([4898]))"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "9MKcJnMQdwv9",
+        "outputId": "a5a2bd8b-4978-4327-85b4-ac861a78023c"
+      },
+      "source": [
+        "# If we want to transform the target tensor in a tensor of labels, we have two options,\n",
+        "# depending on the strategy or what we use the categorical data for. One is simply to\n",
+        "# treat labels as an integer vector of scores:\n",
+        "\n",
+        "target = wineq[:, -1].long()\n",
+        "target\n",
+        "\n",
+        "# If targets were string labels, like wine color, assigning an integer number to each string\n",
+        "# would let us follow the same approach."
+      ],
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "tensor([6, 6, 6,  ..., 6, 7, 6])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 10
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "i39Xpf-YeR5l"
+      },
+      "source": [
+        "### One-hot encoding"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ZEv3qxQrglg7"
+      },
+      "source": [
+        "##### encode each of the 10 scores in a vector of 10 elements, with all elements set to 0 but one, at a different index for each score. This way, a score of 1 could be mapped` onto the vector(1,0,0,0,0,0,0,0,0,0)` , a score of 5 onto (0,0,0,0,1,0,0,0,0,0) , and so on"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "jicyfgs3gyhr",
+        "outputId": "f3d38535-54b1-46b8-d337-fbd04b9ceefb"
+      },
+      "source": [
+        "# We can achieve one-hot encoding using the scatter_ method, \n",
+        "# which fills the tensor with values from a source tensor along the \n",
+        "# indices provided as arguments:\n",
+        "\n",
+        "target_onehot = torch.zeros(target.shape[0], 10)\n",
+        "target_onehot.scatter_(1, target.unsqueeze(1), 1.0)"
+      ],
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "tensor([[0., 0., 0.,  ..., 0., 0., 0.],\n",
+              "        [0., 0., 0.,  ..., 0., 0., 0.],\n",
+              "        [0., 0., 0.,  ..., 0., 0., 0.],\n",
+              "        ...,\n",
+              "        [0., 0., 0.,  ..., 0., 0., 0.],\n",
+              "        [0., 0., 0.,  ..., 1., 0., 0.],\n",
+              "        [0., 0., 0.,  ..., 0., 0., 0.]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "IzvyMCmgiTIA",
+        "outputId": "10be2fd9-596e-4617-e4d6-8c912bca6921"
+      },
+      "source": [
+        "# Since target_onehot has two dimensions (4,898 × 10), we need to add an \n",
+        "# extra dummy dimension to target using unsqueeze :\n",
+        "target_unsqueezed = target.unsqueeze(1)\n",
+        "target_unsqueezed"
+      ],
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "tensor([[6],\n",
+              "        [6],\n",
+              "        [6],\n",
+              "        ...,\n",
+              "        [6],\n",
+              "        [7],\n",
+              "        [6]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 12
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "3t9R1Ip7Y4S7",
+        "outputId": "b01a6144-32cc-4d93-ee7b-70f4ae276bc7"
+      },
+      "source": [
+        "data_mean = torch.mean(data, dim=0)\n",
+        "data_mean"
+      ],
+      "execution_count": 22,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "tensor([6.8548e+00, 2.7824e-01, 3.3419e-01, 6.3914e+00, 4.5772e-02, 3.5308e+01,\n",
+              "        1.3836e+02, 9.9403e-01, 3.1883e+00, 4.8985e-01, 1.0514e+01])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 22
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ROJARL1hZzws",
+        "outputId": "76912c04-6b43-4026-8b32-3e698f70e1a6"
+      },
+      "source": [
+        "data_var = torch.var(data, dim=0)\n",
+        "data_var"
+      ],
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "tensor([7.1211e-01, 1.0160e-02, 1.4646e-02, 2.5726e+01, 4.7733e-04, 2.8924e+02,\n",
+              "        1.8061e+03, 8.9455e-06, 2.2801e-02, 1.3025e-02, 1.5144e+00])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 20
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "0HdQ04c4aioU",
+        "outputId": "9b495db9-8e7d-4cae-8dff-144b94c40e95"
+      },
+      "source": [
+        "# At this point, we can normalize the data by subtracting \n",
+        "# the mean and dividing by the standard deviation, which helps with the learning process\n",
+        "data_normalized = (data - data_mean) / torch.sqrt(data_var)\n",
+        "data_normalized"
+      ],
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "tensor([[ 1.7208e-01, -8.1761e-02,  2.1326e-01,  ..., -1.2468e+00,\n",
+              "         -3.4915e-01, -1.3930e+00],\n",
+              "        [-6.5743e-01,  2.1587e-01,  4.7996e-02,  ...,  7.3995e-01,\n",
+              "          1.3422e-03, -8.2419e-01],\n",
+              "        [ 1.4756e+00,  1.7450e-02,  5.4378e-01,  ...,  4.7505e-01,\n",
+              "         -4.3677e-01, -3.3663e-01],\n",
+              "        ...,\n",
+              "        [-4.2043e-01, -3.7940e-01, -1.1915e+00,  ..., -1.3130e+00,\n",
+              "         -2.6153e-01, -9.0545e-01],\n",
+              "        [-1.6054e+00,  1.1666e-01, -2.8253e-01,  ...,  1.0049e+00,\n",
+              "         -9.6251e-01,  1.8574e+00],\n",
+              "        [-1.0129e+00, -6.7703e-01,  3.7852e-01,  ...,  4.7505e-01,\n",
+              "         -1.4882e+00,  1.0448e+00]])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 23
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "NAcNvlWdbE-c"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
